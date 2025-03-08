@@ -359,21 +359,29 @@
             // Слушаем изменения в базе данных
             ref.on('value', (snapshot) => {
                 const teams = snapshot.val();
-                tableBody.innerHTML = ''; // Очищаем таблицу перед заполнением
+                console.log("Data from Firebase:", teams); // Отладочное сообщение
 
                 if (!teams) {
                     console.error("No teams data found!");
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="10" style="text-align: center; color: #ccc;">Данные не найдены.</td>
+                        </tr>
+                    `;
                     return;
                 }
 
+                tableBody.innerHTML = ''; // Очищаем таблицу перед заполнением
+
                 // Преобразуем объект в массив и сортируем по totalPoints (по убыванию)
                 const sortedTeams = Object.entries(teams).sort((a, b) => b[1].totalPoints - a[1].totalPoints);
+                console.log("Sorted teams:", sortedTeams); // Отладочное сообщение
 
-                // Заполняем таблицу данными
                 sortedTeams.forEach(([teamId, team], index) => {
+                    console.log(`Adding team: ${teamId}`); // Отладочное сообщение
                     const row = `
                         <tr>
-                            <td>${index + 1}</td> <!-- Место в таблице -->
+                            <td>${index + 1}</td>
                             <td class="team-cell">
                                 <img src="/otz2025/img/${team.logo || 'default_logo.png'}" alt="${team.name}" class="team-logo">
                                 <a href="/otz2025/teams/${team.slug || teamId}">${team.name.toUpperCase()}</a>
@@ -390,6 +398,13 @@
                     `;
                     tableBody.insertAdjacentHTML('beforeend', row);
                 });
+            }, (error) => {
+                console.error("Error fetching data:", error); // Обработка ошибок
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align: center; color: #ccc;">Ошибка загрузки данных.</td>
+                    </tr>
+                `;
             });
         }
 
